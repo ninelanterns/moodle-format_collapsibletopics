@@ -216,6 +216,17 @@ class format_collapsibletopics extends format_base {
         if ($courseformatoptions === false) {
             $courseconfig = get_config('moodlecourse');
             $courseformatoptions = array(
+                /*
+                 * MBIHAS-227
+                 * Begin Kineo CCM
+                 */
+                'numsections' => array(
+                    'default' => $courseconfig->numsections,
+                    'type' => PARAM_INT,
+                ),
+                /*
+                 * End Kineo CCM
+                 */
                 'hiddensections' => array(
                     'default' => $courseconfig->hiddensections,
                     'type' => PARAM_INT,
@@ -237,6 +248,31 @@ class format_collapsibletopics extends format_base {
                     ),
                 ),
             );
+            $context = $this->get_context();
+            /*
+             * MBIHAS-227
+             * Begin Kineo CCM
+             */
+            $courseconfig = get_config('moodlecourse');
+            $sectionmenu = array();
+            for ($i = 0; $i <= $courseconfig->maxsections; $i++) {
+                $sectionmenu[$i] = "$i";
+            }
+            /*
+             * End Kineo CCM
+             */
+            /*
+             * MBIHAS-227
+             * Begin Kineo CCM
+             */
+            $courseformatoptionsedit['numsections'] = array(
+                'label' => new lang_string('numbersections', 'format_topcoll'),
+                'element_type' => 'select',
+                'element_attributes' => array($sectionmenu),
+            );
+            /*
+             * End Kineo CCM
+             */
             $courseformatoptions = array_merge_recursive($courseformatoptions, $courseformatoptionsedit);
         }
         return $courseformatoptions;
@@ -293,7 +329,19 @@ class format_collapsibletopics extends format_base {
                 if (!array_key_exists($key, $data)) {
                     if (array_key_exists($key, $oldcourse)) {
                         $data[$key] = $oldcourse[$key];
+                    }// Begin Kineo CCM
+                    else if ($key === 'numsections') {
+                        /* If previous format does not have the field 'numsections'
+                         * and $data['numsections'] is not set,
+                         * we fill it with the maximum section number from the DB */
+                        $maxsection = $DB->get_field_sql('SELECT max(section) from {course_sections} WHERE course = ?',
+                            array($this->courseid));
+                        if ($maxsection) {
+                            // If there are no sections, or just default 0-section, 'numsections' will be set to default.
+                            $data['numsections'] = $maxsection;
+                        }
                     }
+                    // End Kineo CCM
                 }
             }
         }
@@ -396,6 +444,56 @@ class format_collapsibletopics extends format_base {
         // Return everything (nothing to hide).
         return $this->get_format_options();
     }
+    
+    // Begin Kineo CCM T12 
+    
+    /**
+     * Method used in the rendered and during backup instead of legacy 'numsections'
+     *
+     * Default renderer will treat sections with sectionnumber greater that the value returned by this
+     * method as "orphaned" and not display them on the course page unless in editing mode.
+     * Backup will store this value as 'numsections'.
+     *
+     * This method ensures that 3rd party course format plugins that still use 'numsections' continue to
+     * work but at the same time we no longer expect formats to have 'numsections' property.
+     *
+     * @return int
+     */
+    public function get_last_section_number() {
+        $course = $this->get_course();
+        if (isset($course->numsections)) {
+            return $course->numsections;
+        }
+        $modinfo = get_fast_modinfo($course);
+        $sections = $modinfo->get_section_info_all();
+        return (int)max(array_keys($sections));
+    }
+    
+    /**
+     * Method used to get the maximum number of sections for this course format.
+     * @return int
+     */
+    public function get_max_sections() {
+        $maxsections = get_config('moodlecourse', 'maxsections');
+        if (!isset($maxsections) || !is_numeric($maxsections)) {
+            $maxsections = 52;
+        }
+        return $maxsections;
+    }
+    
+    
+    private function get_context() {
+        global $SITE;
+
+        if ($SITE->id == $this->courseid) {
+            // Use the context of the page which should be the course category.
+            global $PAGE;
+            return $PAGE->context;
+        } else {
+            return context_course::instance($this->courseid);
+        }
+    }
+    // End Kineo CCM T12 
 }
 
 /**

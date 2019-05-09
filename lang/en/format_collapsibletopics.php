@@ -38,4 +38,5 @@ $string['privacy:request:preference:sectionstoggle'] = 'You kept sections {$a->v
 $string['sectionname'] = 'Topic';
 $string['section0name'] = 'General';
 $string['showfromothers'] = 'Show topic';
+$string['numbersections'] = 'Number of sections';
 

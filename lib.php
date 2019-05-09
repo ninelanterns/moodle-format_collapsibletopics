@@ -266,7 +266,7 @@ class format_collapsibletopics extends format_base {
              * Begin Kineo CCM
              */
             $courseformatoptionsedit['numsections'] = array(
-                'label' => new lang_string('numbersections', 'format_topcoll'),
+                'label' => new lang_string('numbersections', 'format_collapsibletopics'),
                 'element_type' => 'select',
                 'element_attributes' => array($sectionmenu),
             );
@@ -444,9 +444,9 @@ class format_collapsibletopics extends format_base {
         // Return everything (nothing to hide).
         return $this->get_format_options();
     }
-    
-    // Begin Kineo CCM T12 
-    
+
+    // Begin Kineo CCM T12
+
     /**
      * Method used in the rendered and during backup instead of legacy 'numsections'
      *
@@ -468,7 +468,7 @@ class format_collapsibletopics extends format_base {
         $sections = $modinfo->get_section_info_all();
         return (int)max(array_keys($sections));
     }
-    
+
     /**
      * Method used to get the maximum number of sections for this course format.
      * @return int
@@ -480,8 +480,8 @@ class format_collapsibletopics extends format_base {
         }
         return $maxsections;
     }
-    
-    
+
+
     private function get_context() {
         global $SITE;
 
@@ -493,7 +493,7 @@ class format_collapsibletopics extends format_base {
             return context_course::instance($this->courseid);
         }
     }
-    // End Kineo CCM T12 
+    // End Kineo CCM T12
 }
 
 /**

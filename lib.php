@@ -248,7 +248,7 @@ class format_collapsibletopics extends format_base {
                     ),
                 ),
             );
-            $context = $this->get_context();
+
             /*
              * MBIHAS-227
              * Begin Kineo CCM
@@ -482,17 +482,6 @@ class format_collapsibletopics extends format_base {
     }
 
 
-    private function get_context() {
-        global $SITE;
-
-        if ($SITE->id == $this->courseid) {
-            // Use the context of the page which should be the course category.
-            global $PAGE;
-            return $PAGE->context;
-        } else {
-            return context_course::instance($this->courseid);
-        }
-    }
     // End Kineo CCM T12
 }
 
